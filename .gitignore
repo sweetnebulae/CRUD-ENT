@@ -1,0 +1,12 @@
+# IDE
+.idea/
+.idea/*
+
+# Abaikan semua isi folder ent/
+ent/*
+
+# Tapi jangan abaikan folder ent/schema dan seluruh isinya
+!ent/schema/
+!ent/schema/**
+
+.env
