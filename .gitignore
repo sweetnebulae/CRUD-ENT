@@ -1,12 +1,12 @@
-# IDE
+# JetBrains IDE settings
 .idea/
-.idea/*
 
-# Abaikan semua isi folder ent/
+# Ignore all generated ent/ files
 ent/*
 
-# Tapi jangan abaikan folder ent/schema dan seluruh isinya
+# Except the schema directory and all contents inside it
 !ent/schema/
 !ent/schema/**
 
+# Ignore environment file
 .env

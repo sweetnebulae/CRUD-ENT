@@ -9,11 +9,18 @@ import (
 	"github.com/sweetnebulae/go_ent/model"
 )
 
+// PostRepositoryImpl is the Ent-based implementation of PostRepository.
 type PostRepositoryImpl struct {
-	Db *ent.Client
+	Db *ent.Client // Ent ORM client
 }
 
-func (p PostRepositoryImpl) Save(ctx context.Context, post model.Post) {
+// NewPostRepositoryImpl creates and returns a new PostRepositoryImpl.
+func NewPostRepositoryImpl(db *ent.Client) *PostRepositoryImpl {
+	return &PostRepositoryImpl{Db: db}
+}
+
+// Save creates a new post record in the database using Ent.
+func (p PostRepositoryImpl) Save(ctx context.Context, post model.Post) error {
 	result, err := p.Db.Book.
 		Create().
 		SetTitle(post.Title).
@@ -24,9 +31,11 @@ func (p PostRepositoryImpl) Save(ctx context.Context, post model.Post) {
 
 	helper.ErrorPanic(err)
 	fmt.Println(result)
+	return nil
 }
 
-func (p PostRepositoryImpl) FindAll(ctx context.Context) []model.Post {
+// FindAll retrieves all book records from the database and maps them to model.Post.
+func (p PostRepositoryImpl) FindAll(ctx context.Context) ([]model.Post, error) {
 	allPosts, err := p.Db.Book.Query().All(ctx)
 	helper.ErrorPanic(err)
 
@@ -41,9 +50,10 @@ func (p PostRepositoryImpl) FindAll(ctx context.Context) []model.Post {
 		}
 		posts = append(posts, postData)
 	}
-	return posts
+	return posts, nil
 }
 
+// FindById retrieves a single post by its UUID.
 func (p PostRepositoryImpl) FindById(ctx context.Context, id uuid.UUID) (model.Post, error) {
 	post, err := p.Db.Book.Get(ctx, id)
 	helper.ErrorPanic(err)
@@ -59,7 +69,12 @@ func (p PostRepositoryImpl) FindById(ctx context.Context, id uuid.UUID) (model.P
 	return postData, nil
 }
 
+// Update modifies an existing post identified by UUID.
+// Returns error if the update operation fails.
 func (p PostRepositoryImpl) Update(ctx context.Context, post model.Post) error {
+	fmt.Printf("Attempting to update book with ID: %v\n", post.Id)
+	fmt.Printf("Data to update: %+v\n", post)
+
 	updateBook, err := p.Db.Book.
 		UpdateOneID(post.Id).
 		SetTitle(post.Title).
@@ -68,15 +83,19 @@ func (p PostRepositoryImpl) Update(ctx context.Context, post model.Post) error {
 		SetGenre(post.Genre).
 		Save(ctx)
 
-	helper.ErrorPanic(err)
-	fmt.Println(updateBook)
+	if err != nil {
+		return fmt.Errorf("failed to update book: %w", err)
+	}
+
+	fmt.Printf("Updated book: %+v\n", updateBook)
 	return nil
 }
 
-func (p PostRepositoryImpl) Delete(ctx context.Context, id uuid.UUID) {
+// Delete removes a post from the database by its UUID.
+func (p PostRepositoryImpl) Delete(ctx context.Context, id uuid.UUID) error {
 	err := p.Db.Book.
 		DeleteOneID(id).
 		Exec(ctx)
 	helper.ErrorPanic(err)
-	return
+	return nil
 }

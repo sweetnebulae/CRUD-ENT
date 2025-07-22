@@ -8,13 +8,14 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/joho/godotenv"
 	"github.com/sweetnebulae/go_ent/ent"
+	"github.com/sweetnebulae/go_ent/helper"
 	"log"
 	"os"
 )
 
 // ConnectDB Open new connection
 func ConnectDB() *ent.Client {
-	err := godotenv.Load("DATABASE_URL")
+	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
@@ -23,9 +24,7 @@ func ConnectDB() *ent.Client {
 		log.Fatal("DATABASE_URL is not set in the environment")
 	}
 	db, err := sql.Open("pgx", databaseUrl)
-	if err != nil {
-		log.Fatal(err)
-	}
+	helper.ErrorPanic(err)
 
 	// Create an ent.Driver from `db`.
 	drv := entsql.OpenDB(dialect.Postgres, db)
@@ -40,6 +39,6 @@ func ConnectDB() *ent.Client {
 // DisconnectDB close connection
 func DisconnectDB(client *ent.Client) {
 	if err := client.Close(); err != nil {
-		log.Fatal(err)
+		helper.ErrorPanic(err)
 	}
 }
